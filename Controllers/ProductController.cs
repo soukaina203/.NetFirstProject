@@ -2,57 +2,85 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ProductData;
+using Context;
 using Models;
 using Microsoft.AspNetCore.Mvc;
-namespace dotnet.Controllers
+using Microsoft.EntityFrameworkCore;
+
+namespace dotnet.Controllers;
+[ApiController]
+[Route("api/[controller]/{action}")]
+public class ProductController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]/{action}")]
-    public class ProductController : ControllerBase
+    private readonly EcomDbContext _context;
+
+    public ProductController(EcomDbContext context)
     {
-        [HttpGet]
-        public ActionResult<List<Product>> Get()
-        {
-            return Ok(EcomDbContext.Products);
-        }
-
-        [HttpGet("id")]
-        public ActionResult<Product> Get(int id)
-        {
-            var item = EcomDbContext.Products.FirstOrDefault(u => u.Id == id);
-            if (item == null)
-            {
-                return BadRequest();
-            }
-            return Ok(item);
-        }
-
-        [HttpPost]
-        [Route(template: "AddProduct")]
-        public ActionResult<Product> AddProduct(Product product)
-        {
-            EcomDbContext.Products.Add(product);
-            return Ok();
-        }
-
-        [HttpDelete]
-        public ActionResult Delete(int id)
-        {
-            var item = EcomDbContext.Products.FirstOrDefault(u => u.Id == id);
-            if (item == null) return NotFound();
-            EcomDbContext.Products.Remove(item);
-            return Ok();
-        }
-        [HttpPatch]
-        public ActionResult Update( Product product){
-           var targetedProduct=EcomDbContext.Products.FirstOrDefault(u=>u.Id==product.Id);
-            if(targetedProduct==null) return NotFound();
-             targetedProduct.Name=product.Name;
-             targetedProduct.Price=product.Price;
-             return Ok();
-
-
-        }
+        _context = context;
     }
+
+    // GET: api/products
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Product>>> Get()
+    {
+        return await _context.Products.ToListAsync();
+    }
+
+    // GET: api/products/{id}
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Product>> GetById(int id)
+    {
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        return product;
+    }
+
+    // POST: api/products
+    [HttpPost]
+public async Task<ActionResult<string>> Post([FromBody] Product product)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(ModelState);
+    }
+
+    _context.Products.Add(product);
+    await _context.SaveChangesAsync();
+
+    return "done";
 }
+
+
+    // PUT: api/products/{id}
+[HttpPatch("{id}")]
+public async Task<ActionResult<string>> Update( [FromForm] Product product)
+{
+  
+
+    _context.Entry(product).State = EntityState.Modified;
+    await _context.SaveChangesAsync();
+
+    return "Done";
+}
+
+
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(int id)
+    {
+        var productToDelete = await _context.Products.FindAsync(id);
+        if (productToDelete == null)
+        {
+            return NotFound();
+        }
+
+        _context.Products.Remove(productToDelete);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+};
