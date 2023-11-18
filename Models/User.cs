@@ -5,11 +5,14 @@ using System.Threading.Tasks;
 
 namespace Models
 {
-    public class Product
+    public class User
     {
         public int Id { get; set; }
-        public string Name  { get; set; }= string.Empty;
+        public string Name { get; set; } 
+        public string Email { get; set; }
 
-        public int Price {get; set;}= 0;
+        public string  Password  { get; set; }
+        
+
     }
 }

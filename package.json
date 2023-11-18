@@ -3,10 +3,15 @@
     "version": "0.0.1",
     "scripts": {
       "reverse": "dotnet ef dbcontext scaffold 'data source=DESKTOP-3550K4L\\HARMONY;database=rfid;user id=sa; password=123' Microsoft.EntityFrameworkCore.SqlServer -o Model -c 'MyContext'",
-      "migration": "dotnet ef migrations add \"add mangopay class & a relation with user \" --context MyContext --output-dir Migrations/project",
+      "migration": "dotnet ef migrations add \"add prop email to user class \" --context EcomDbContext --output-dir Migrations/project",
       "generate-script": "dotnet ef migrations script -o Migrations/sample.sql",
       "m": "npm run migration & npm run generate-script",
       "u": "dotnet ef database update",
       "r": "dotnet ef migrations remove"
+      
+    },
+    "comds":{
+      "migration": "dotnet ef migrations add 'User Table'"
+      
     }
   }

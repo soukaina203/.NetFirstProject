@@ -41,31 +41,31 @@ public class ProductController : ControllerBase
 
     // POST: api/products
     [HttpPost]
-public async Task<ActionResult<string>> Post([FromBody] Product product)
-{
-    if (!ModelState.IsValid)
+    public async Task<ActionResult<string>> Post([FromBody] Product product)
     {
-        return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+
+        return "done";
     }
-
-    _context.Products.Add(product);
-    await _context.SaveChangesAsync();
-
-    return "done";
-}
 
 
     // PUT: api/products/{id}
-[HttpPatch("{id}")]
-public async Task<ActionResult<string>> Update( [FromForm] Product product)
-{
-  
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<string>> Update([FromForm] Product product)
+    {
 
-    _context.Entry(product).State = EntityState.Modified;
-    await _context.SaveChangesAsync();
 
-    return "Done";
-}
+        _context.Entry(product).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+
+        return "Done";
+    }
 
 
 
