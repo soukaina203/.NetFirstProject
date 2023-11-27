@@ -53,17 +53,12 @@ namespace dotnet.Controllers
             if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
             {
                 return Ok(new { message = "Email | password required", code = -4 });
-
             }
-
             var User = await _context.Users.Where(x => x.Email == model.Email).AsNoTracking().FirstOrDefaultAsync();
-
-
             var newHash = _crypto.HashPassword(model.Password);
-
             if (User == null)
             {
-                return Ok(new { message = "Email error s", code = -3 });
+                return Ok(new { message = "Email error ", code = -3 });
             }
             if (newHash!=User.Password)
             {
@@ -71,15 +66,12 @@ namespace dotnet.Controllers
             }
             var claims = new Claim[]
                            {
-                        new(ClaimTypes.Name, User.Name.ToString()),
+                        new(ClaimTypes.Name, User.Id.ToString()),
                         new(ClaimTypes.Email, User.Email)};
                            
             User.Password="";
             var token = _tokkenHandler.GenerateTokken(claims);
             return Ok(new { User, Token = token });
-
-         
-
         }
     }
 

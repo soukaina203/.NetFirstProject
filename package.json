@@ -1,6 +1,7 @@
 {
     "name": "market_place",
     "version": "0.0.1",
+    "private":true,
     "scripts": {
       "reverse": "dotnet ef dbcontext scaffold 'data source=DESKTOP-3550K4L\\HARMONY;database=rfid;user id=sa; password=123' Microsoft.EntityFrameworkCore.SqlServer -o Model -c 'MyContext'",
       "migration": "dotnet ef migrations add \"add prop email to user class \" --context EcomDbContext --output-dir Migrations/project",

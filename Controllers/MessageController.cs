@@ -1,6 +1,8 @@
 
 using Context;
+using dotnet.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Models;
 
@@ -11,10 +13,13 @@ namespace Controllers
     public class MessageController : ControllerBase
     {
         private readonly EcomDbContext _context;
+        private readonly IHubContext<ChatHub> _chatHub;
 
-        public MessageController(EcomDbContext context)
+
+        public MessageController(EcomDbContext context, IHubContext<ChatHub> chatHub)
         {
             _context = context;
+            _chatHub = chatHub;
         }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Message>>> Get()
@@ -23,15 +28,27 @@ namespace Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> Post([FromBody] Message Message)
+        public async Task<ActionResult<string>> Post([FromBody] Message model)
         {
-            // if (!ModelState.IsValid)
-            // {
-            //     return BadRequest(ModelState);
-            // }
-
-            _context.Messages.Add(Message);
+            _context.Messages.Add(model);
             await _context.SaveChangesAsync();
+
+            var connectionId = ChatHub.userConnectionIds.Where(e => e.Key ==
+             model.IdReceiver).Select(e => e.Value).FirstOrDefault();
+
+            if (connectionId != null)
+            {
+                await _chatHub.Clients.Client(connectionId)
+                .SendAsync("RecieveMessage", model);
+            }
+            int senderId = model.IdSender;
+            string senderConnectionId;
+            if (ChatHub.userConnectionIds.TryGetValue(senderId, out senderConnectionId))
+            {
+                // Send a copy of the message to the sender
+                await _chatHub.Clients.Client(senderConnectionId).SendAsync("RecieveMessage", model);
+            }
+
 
             return Ok();
         }
@@ -59,7 +76,7 @@ namespace Controllers
                 return NotFound();
             }
 
-            return Ok(new { messages ,Discussion });
+            return Ok(new { messages, Discussion });
 
         }
 
